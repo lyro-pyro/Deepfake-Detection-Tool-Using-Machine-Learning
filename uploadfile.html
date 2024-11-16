@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Analyze</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1f2230, #0c0e16);
+            color: #ffffff;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .content {
+            width: 600px;
+            background-color: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .subheader {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .upload-section {
+            margin-top: 20px;
+            background-color: #334155;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .upload-section button {
+            background-color: #1e293b;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .upload-section button:hover {
+            background-color: #0f172a;
+        }
+        .upload-box {
+            margin-top: 20px;
+            background-color: #475569;
+            padding: 40px;
+            border-radius: 8px;
+            border: 2px dashed #64748b;
+        }
+        .upload-box i {
+            font-size: 24px;
+        }
+        .upload-box p {
+            margin: 10px 0;
+        }
+        .email-section input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .analyze-button {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .analyze-button button {
+            background-color: #e94560;
+            color: #1e293b;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .analyze-button button:hover {
+            background-color: #e94560;
+        }
+          <!-- Upload Section -->
+    <section class="upload-container">
+        <label for="file-upload">Choose File</label>
+        <input type="file" id="file-upload" />
+        <div class="progress-bar" id="progress-bar">
+            <div id="progress"></div>
+        </div>
+        <div class="success-message" id="success-message">File uploaded successfully!</div>
+    </section>
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="header">Upload and Analyze</div>
+            <div class="subheader">Detect deepfake content with ease.</div>
+            <div class="upload-section">
+                <button onclick="triggerFileUpload()">Upload File</button>
+                <button onclick="scanURL()">Scan URL</button>
+                <div class="upload-box">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & Drop your files here</p>
+                    <p>Supports: .wav, .mp3 (max 25MB, 1 minute)</p>
+                    <input type="file" id="file-input" style="display: none;" accept=".wav, .mp3" onchange="fileSelected(event)">
+                    <button onclick="triggerFileUpload()">Select File</button>
+                </div>
+            </div>
+            <div class="email-section">
+                <label for="email">Your Email</label>
+                <input type="email" id="email" placeholder="email@address.com">
+            </div>
+            <div class="analyze-button">
+                <button onclick="analyze()">Analyze</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function triggerFileUpload() {
+            // Trigger the hidden file input
+            const fileInput = document.getElementById('file-input');
+            fileInput.click();
+        }
+
+        function fileSelected(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert(`File selected: ${file.name}`);
+            } else {
+                alert('No file selected.');
+            }
+        }
+
+        function scanURL() {
+            const url = prompt('Enter URL to scan:');
+            if (url) {
+                alert(`Scanning URL: ${url}`);
+            } else {
+                alert('No URL entered.');
+            }
+        }
+
+        function analyze() {
+            const email = document.getElementById('email').value;
+            const fileInput = document.getElementById('file-input');
+
+            if (!fileInput.files.length) {
+                alert('Please select a file to analyze.');
+                return;
+            }
+
+            if (!email) {
+                alert('Please enter your email.');
+                return;
+            }
+
+            // Proceed with analysis (send data to server or display results)
+            alert('File and email validated. Proceeding with analysis...');
+        }
+    </script>
+</body>
+</html>
