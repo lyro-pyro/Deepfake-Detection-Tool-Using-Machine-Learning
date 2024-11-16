@@ -1,2 +1,0 @@
-# deepfakedemo
-SmashHack PESU

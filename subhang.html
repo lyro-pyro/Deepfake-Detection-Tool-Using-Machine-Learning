@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity | Deepfake Detection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://via.placeholder.com/60" alt="Logo">
+            <h1>INSIGHT SEC</h1>
+            <p>Deepfake Detection, Livestream Integrity, & Evidence Verification Tools</p>
+        </div>
+        <div id="login-form" class="form-container active">
+            <input type="text" id="login-username" placeholder="Username or Email">
+            <input type="password" id="login-password" placeholder="Password">
+            <button href="subhang.html">Login</button>
+            <a href="#">Forgot Password?</a>
+            <div class="switch-form" onclick="switchForm('signup-form')">Don't have an account? Sign up</div>
+        </div>
+        <div id="signup-form" class="form-container">
+            <input type="text" id="signup-fullname" placeholder="Full Name">
+            <input type="email" id="signup-email" placeholder="Email">
+            <input type="text" id="signup-username" placeholder="Username">
+            <input type="password" id="signup-password" placeholder="Password">
+            <button onclick="signup()">Sign Up</button>
+            <div class="switch-form" onclick="switchForm('login-form')">Already have an account? Login</div>
+        </div>
+        <div id="dashboard" class="form-container">
+            <div class="nav-tabs">
+                <button onclick="showTab('deepfake-detector')" class="active">Deepfake Detector</button>
+                <button onclick="showTab('livestream-integrity')">Livestream Integrity</button>
+                <button onclick="showTab('evidence-verification')">Evidence Verification</button>
+            </div>
+            <div id="deepfake-detector" class="tab-content active">
+                <h2>Deepfake Detection Tool</h2>
+                <p>Analyze videos for potential deepfakes. Upload a video or stream to check its authenticity.</p>
+            </div>
+            <div id="livestream-integrity" class="tab-content">
+                <h2>Real-Time Livestream Integrity</h2>
+                <p>Verify the integrity of live broadcasts and streams. Ensure the broadcast hasn't been altered or manipulated.</p>
+            </div>
+            <div id="evidence-verification" class="tab-content">
+                <h2>Digital Evidence Verification Tool</h2>
+                <p>Verify the authenticity of digital evidence such as images, videos, and documents.</p>
+            </div>
+            <button onclick="logout()">Logout</button>
+        </div>
+        <div class="footer">
+            <a href="#">Contact Us</a>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
