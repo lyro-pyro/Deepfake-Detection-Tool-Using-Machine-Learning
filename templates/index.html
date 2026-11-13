@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detection Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --light-bg: #ececec;
+            --dark-bg: #161618;
+            --text-dark: #121316;
+            --text-light: #f0f0f2;
+            --text-muted-light: #707278;
+            --text-muted-dark: #8c8e96;
+            --pixel-color: #161618;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-dark);
+            position: relative;
+        }
+
+        /* ── Antigravity Cursor Particle Canvas ── */
+        #particle-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* ── Split Layout Container ── */
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--dark-bg);
+        }
+
+        /* Upper light hero section with stepped pixel border */
+        .hero-light-section {
+            background: var(--light-bg);
+            color: var(--text-dark);
+            position: relative;
+            padding: 36px 56px 90px;
+            z-index: 10;
+        }
+
+        /* ══ HEADER ══ */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 70px;
+        }
+        .hdr-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .hdr-brand img {
+            width: 34px;
+            height: 34px;
+            object-fit: cover;
+            image-rendering: pixelated;
+            border-radius: 4px;
+            background: #000;
+        }
+        .hdr-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dark);
+        }
+
+        /* ══ HERO MAIN ══ */
+        .hero-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            position: relative;
+            z-index: 15;
+        }
+
+        .headline {
+            font-size: clamp(3.8rem, 7vw, 6.2rem);
+            font-weight: 700;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+            color: var(--text-dark);
+        }
+
+        .hero-action-box {
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .hero-desc {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-muted-light);
+        }
+
+        .btn-analyze {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 28px;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            border-radius: 6px;
+            width: fit-content;
+            transition: all 0.2s ease;
+        }
+        .btn-analyze:hover {
+            background: #000;
+            transform: translateY(-2px);
+        }
+        .btn-analyze svg {
+            transition: transform 0.2s;
+        }
+        .btn-analyze:hover svg {
+            transform: translateX(4px);
+        }
+
+        /* ══ PIXEL CONTOUR CANVAS (Static stepped contour with numbers) ══ */
+        #pixel-contour {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -50px;
+            width: 100%;
+            height: 120px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* ══ LOWER DARK SECTION (Forensic layers strictly side by side) ══ */
+        .lower-dark-section {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            flex: 1;
+            padding: 90px 56px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            z-index: 10;
+        }
+
+        .layers-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted-dark);
+            margin-bottom: 24px;
+        }
+
+        /* STRICT 5-COLUMN SIDE-BY-SIDE ROW */
+        .layers-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 24px;
+        }
+
+        .layer-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 12px;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .layer-item:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .layer-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted-dark);
+        }
+        .layer-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: -0.01em;
+        }
+        .layer-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted-dark);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 960px) {
+            .hero-light-section { padding: 28px 28px 70px; }
+            .lower-dark-section { padding: 60px 28px 40px; }
+            .hero-body { flex-direction: column; align-items: flex-start; gap: 32px; }
+            .layers-row { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+            .layer-item:nth-child(3) { border-right: none; }
+        }
+        @media (max-width: 600px) {
+            .layers-row { grid-template-columns: 1fr; }
+            .layer-item { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Antigravity Cursor Particle Canvas -->
+<canvas id="particle-canvas"></canvas>
+
+<div class="page-container">
+
+    <!-- UPPER LIGHT SECTION -->
+    <div class="hero-light-section">
+        <!-- Static pixel boundary canvas -->
+        <canvas id="pixel-contour"></canvas>
+
+        <header>
+            <div class="hdr-brand">
+                <img src="/static/logo.jpg" alt="Deepfake Detection Lab Logo">
+                <h1 class="hdr-title">DEEPFAKE DETECTION LAB</h1>
+            </div>
+        </header>
+
+        <div class="hero-body">
+            <h2 class="headline">
+                Truth or<br>synthetic?
+            </h2>
+
+            <div class="hero-action-box">
+                <p class="hero-desc">
+                    Five-layer classical image forensics detecting re-compression residuals, sensor noise inconsistencies, GAN spectral fingerprints, and blend boundaries.
+                </p>
+                <a href="/detect" class="btn-analyze">
+                    <span>Analyze Image</span>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 8h10M9 4l4 4-4 4"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOWER DARK SECTION (Forensic layers side-by-side) -->
+    <div class="lower-dark-section">
+        <div class="layers-header">// FORENSIC VERIFICATION LAYERS</div>
+
+        <div class="layers-row">
+            <!-- 01 -->
+            <div class="layer-item">
+                <span class="layer-num">01</span>
+                <h3 class="layer-title">Error Level</h3>
+                <p class="layer-desc">Measures block-level JPEG compression error residuals to detect local re-saving or pasted content.</p>
+            </div>
+
+            <!-- 02 -->
+            <div class="layer-item">
+                <span class="layer-num">02</span>
+                <h3 class="layer-title">Noise Pattern</h3>
+                <p class="layer-desc">Examines camera sensor noise consistency; AI generation produces unnaturally smooth patches.</p>
+            </div>
+
+            <!-- 03 -->
+            <div class="layer-item">
+                <span class="layer-num">03</span>
+                <h3 class="layer-title">Spectral FFT</h3>
+                <p class="layer-desc">2D Fourier transformation isolates periodic grid spikes left by deep generative architectures.</p>
+            </div>
+
+            <!-- 04 -->
+            <div class="layer-item">
+                <span class="layer-num">04</span>
+                <h3 class="layer-title">Seam Detect</h3>
+                <p class="layer-desc">Luminance gradient tracking flags edge step-discontinuities around face-swap and blend borders.</p>
+            </div>
+
+            <!-- 05 -->
+            <div class="layer-item">
+                <span class="layer-num">05</span>
+                <h3 class="layer-title">JPEG Ghost</h3>
+                <p class="layer-desc">Detects multi-generation quantization ghosts left by composites from differing compression qualities.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ── 1. Static Pixel Contour from Design Reference ─────────────
+(function() {
+    const cv = document.getElementById('pixel-contour');
+    const ctx = cv.getContext('2d');
+    const CELL = 18;
+
+    function drawPixelBoundary() {
+        const W = cv.width = cv.offsetWidth;
+        const H = cv.height = cv.offsetHeight;
+        ctx.clearRect(0, 0, W, H);
+
+        const cols = Math.ceil(W / CELL) + 1;
+        const rows = Math.ceil(H / CELL) + 1;
+
+        // Stepped stepped silhouette matching the reference image
+        for (let c = 0; c < cols; c++) {
+            const x = c / cols;
+            // Contour baseline around the center of this transition box
+            const baseline = H * 0.45 + (Math.sin(x * Math.PI * 3.2) * 16) + (Math.cos(x * Math.PI * 1.5) * 12);
+            const boundaryRow = Math.floor(baseline / CELL);
+
+            for (let r = 0; r < rows; r++) {
+                const py = r * CELL;
+                const px = c * CELL;
+
+                // Deterministic pseudo-random stepped mosaic blocks near contour
+                const diff = r - boundaryRow;
+                let isDark = diff > 0;
+                if (diff === 0 || diff === -1 || diff === 1) {
+                    const seed = Math.sin(c * 19.3 + r * 77.1) * 10000;
+                    if (seed - Math.floor(seed) > 0.45) {
+                        isDark = !isDark;
+                    }
+                }
+
+                if (isDark) {
+                    ctx.fillStyle = '#161618';
+                    ctx.fillRect(px, py, CELL, CELL);
+                }
+            }
+        }
+
+        // Small annotation numbers along boundary
+        ctx.font = '500 8px ui-monospace, monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+        for (let i = 0; i < 40; i++) {
+            const seedX = (Math.sin(i * 12.3) * 0.5 + 0.5) * W;
+            const seedY = (Math.sin(i * 44.1) * 0.35 + 0.5) * H;
+            const num = (Math.floor(Math.abs(Math.sin(i * 3.1) * 2)) + 1).toString();
+            ctx.fillText(num, seedX, seedY);
+        }
+    }
+
+    window.addEventListener('resize', drawPixelBoundary);
+    drawPixelBoundary();
+})();
+
+// ── 2. Antigravity-Style Cursor Particle Effect ────────────────
+(function() {
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    let particles = [];
+    let lastX = null, lastY = null;
+
+    function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Spawns particles only when cursor moves
+    document.addEventListener('mousemove', e => {
+        const x = e.clientX;
+        const y = e.clientY;
+
+        if (lastX !== null) {
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Emit a small cluster of subtle star/glow particles on movement
+            const count = Math.min(Math.floor(dist / 6) + 1, 4);
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 8,
+                    y: y + (Math.random() - 0.5) * 8,
+                    vx: (Math.random() - 0.5) * 0.8 + dx * 0.05,
+                    vy: (Math.random() - 0.5) * 0.8 + dy * 0.05 - 0.3, // slight upward float
+                    size: Math.random() * 2.2 + 0.8,
+                    alpha: 0.75,
+                    decay: Math.random() * 0.02 + 0.015
+                });
+            }
+        }
+        lastX = x;
+        lastY = y;
+    });
+
+    document.addEventListener('mouseleave', () => {
+        lastX = null;
+        lastY = null;
+    });
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= 0.96;
+            p.vy *= 0.96;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+
+            // Draw subtle antigravity glowing dot
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(180, 185, 205, ${p.alpha})`;
+            ctx.shadowColor = `rgba(200, 210, 240, ${p.alpha * 0.6})`;
+            ctx.shadowBlur = 4;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+})();
+</script>
+
+</body>
+</html>
