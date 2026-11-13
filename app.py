@@ -29,6 +29,7 @@ def allowed_file(filename: str) -> bool:
 # Landing page
 # ---------------------------------------------------------------------------
 @app.route("/")
+@app.route("/api")
 def home():
     return render_template("index.html")
 
@@ -37,6 +38,7 @@ def home():
 # Detect page (upload UI)
 # ---------------------------------------------------------------------------
 @app.route("/detect")
+@app.route("/api/detect")
 def detect_page():
     return render_template("detect.html")
 
@@ -45,6 +47,7 @@ def detect_page():
 # Analyze API endpoint
 # ---------------------------------------------------------------------------
 @app.route("/analyze", methods=["POST"])
+@app.route("/api/analyze", methods=["POST"])
 def analyze():
     if "file" not in request.files:
         return jsonify({"error": "No file provided. Please upload an image."}), 400
