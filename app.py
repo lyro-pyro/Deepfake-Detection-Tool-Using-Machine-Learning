@@ -38,9 +38,6 @@ def serve_static(filename):
 # Landing page
 # ---------------------------------------------------------------------------
 @app.route("/")
-@app.route("/api")
-@app.route("/api/index")
-@app.route("/api/index.py")
 def home():
     return render_template("index.html")
 
@@ -49,7 +46,6 @@ def home():
 # Detect page (upload UI)
 # ---------------------------------------------------------------------------
 @app.route("/detect")
-@app.route("/api/detect")
 def detect_page():
     return render_template("detect.html")
 
@@ -58,7 +54,6 @@ def detect_page():
 # Analyze API endpoint
 # ---------------------------------------------------------------------------
 @app.route("/analyze", methods=["POST"])
-@app.route("/api/analyze", methods=["POST"])
 def analyze():
     if "file" not in request.files:
         return jsonify({"error": "No file provided. Please upload an image."}), 400
@@ -82,6 +77,21 @@ def analyze():
     except Exception as e:
         app.logger.exception("Unexpected error during analysis")
         return jsonify({"error": "An internal error occurred during analysis."}), 500
+
+
+# ---------------------------------------------------------------------------
+# Vercel entrypoint fallback
+# ---------------------------------------------------------------------------
+@app.route("/api/index.py", methods=["GET", "POST"])
+@app.route("/api/index", methods=["GET", "POST"])
+@app.route("/api", methods=["GET", "POST"])
+def vercel_entrypoint():
+    path = request.args.get("__path") or request.headers.get("x-matched-path") or ""
+    if path == "/detect":
+        return render_template("detect.html")
+    if path == "/analyze" or request.method == "POST":
+        return analyze()
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

@@ -1,8 +1,21 @@
 {
+  "version": 2,
   "rewrites": [
     {
+      "source": "/detect",
+      "destination": "/api/index.py?__path=/detect"
+    },
+    {
+      "source": "/analyze",
+      "destination": "/api/index.py?__path=/analyze"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "/static/$1"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__path=/$1"
     }
   ]
 }
