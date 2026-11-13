@@ -7,10 +7,11 @@ Routes:
 """
 
 import os
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from detector import analyze_image
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 app = Flask(
     __name__,
     template_folder=os.path.join(BASE_DIR, "templates"),
@@ -26,10 +27,20 @@ def allowed_file(filename: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Explicit static file serving
+# ---------------------------------------------------------------------------
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
+
+
+# ---------------------------------------------------------------------------
 # Landing page
 # ---------------------------------------------------------------------------
 @app.route("/")
 @app.route("/api")
+@app.route("/api/index")
+@app.route("/api/index.py")
 def home():
     return render_template("index.html")
 

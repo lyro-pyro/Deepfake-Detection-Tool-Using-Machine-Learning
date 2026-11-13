@@ -17,7 +17,7 @@
         }
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; overflow-x: hidden; }
+        html, body { min-height: 100%; overflow-x: hidden; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -33,7 +33,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 100;
+            z-index: 10;
         }
 
         /* ── Split Layout Container ── */
@@ -43,6 +43,7 @@
             flex-direction: column;
             position: relative;
             background: var(--dark-bg);
+            z-index: 20;
         }
 
         /* Upper light hero section with stepped pixel border */
@@ -51,7 +52,7 @@
             color: var(--text-dark);
             position: relative;
             padding: 36px 56px 90px;
-            z-index: 10;
+            z-index: 30;
         }
 
         /* ══ HEADER ══ */
@@ -60,6 +61,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 70px;
+            position: relative;
+            z-index: 50;
         }
         .hdr-brand {
             display: flex;
@@ -67,8 +70,8 @@
             gap: 16px;
         }
         .hdr-brand img {
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             object-fit: cover;
             image-rendering: pixelated;
             border-radius: 4px;
@@ -81,6 +84,20 @@
             text-transform: uppercase;
             color: var(--text-dark);
         }
+        .hdr-right {
+            display: flex;
+            align-items: center;
+        }
+        .hdr-logo-right {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            image-rendering: pixelated;
+            border-radius: 6px;
+            border: 1.5px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            background: #000;
+        }
 
         /* ══ HERO MAIN ══ */
         .hero-body {
@@ -88,7 +105,7 @@
             justify-content: space-between;
             align-items: flex-end;
             position: relative;
-            z-index: 15;
+            z-index: 40;
         }
 
         .headline {
@@ -104,6 +121,8 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            position: relative;
+            z-index: 50;
         }
         .hero-desc {
             font-size: 0.95rem;
@@ -115,20 +134,26 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 14px 28px;
+            padding: 16px 32px;
             background: var(--dark-bg);
             color: var(--text-light);
             text-decoration: none;
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             font-weight: 600;
             letter-spacing: 0.04em;
             border-radius: 6px;
             width: fit-content;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 60;
             transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
         }
         .btn-analyze:hover {
             background: #000;
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
         }
         .btn-analyze svg {
             transition: transform 0.2s;
@@ -159,7 +184,7 @@
             flex-direction: column;
             justify-content: flex-end;
             position: relative;
-            z-index: 10;
+            z-index: 20;
         }
 
         .layers-header {
@@ -237,8 +262,12 @@
 
         <header>
             <div class="hdr-brand">
-                <img src="/static/logo.jpg" alt="Deepfake Detection Lab Logo">
+                <img src="/static/logo.jpg" alt="Logo">
                 <h1 class="hdr-title">DEEPFAKE DETECTION LAB</h1>
+            </div>
+            <!-- Top Right Logo -->
+            <div class="hdr-right">
+                <img src="/static/logo.jpg" alt="Logo" class="hdr-logo-right">
             </div>
         </header>
 
@@ -251,7 +280,7 @@
                 <p class="hero-desc">
                     Five-layer classical image forensics detecting re-compression residuals, sensor noise inconsistencies, GAN spectral fingerprints, and blend boundaries.
                 </p>
-                <a href="/detect" class="btn-analyze">
+                <a href="/detect" class="btn-analyze" id="btn-analyze" onclick="window.location.href='/detect';">
                     <span>Analyze Image</span>
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 8h10M9 4l4 4-4 4"/>
@@ -320,10 +349,8 @@
         const cols = Math.ceil(W / CELL) + 1;
         const rows = Math.ceil(H / CELL) + 1;
 
-        // Stepped stepped silhouette matching the reference image
         for (let c = 0; c < cols; c++) {
             const x = c / cols;
-            // Contour baseline around the center of this transition box
             const baseline = H * 0.45 + (Math.sin(x * Math.PI * 3.2) * 16) + (Math.cos(x * Math.PI * 1.5) * 12);
             const boundaryRow = Math.floor(baseline / CELL);
 
@@ -331,7 +358,6 @@
                 const py = r * CELL;
                 const px = c * CELL;
 
-                // Deterministic pseudo-random stepped mosaic blocks near contour
                 const diff = r - boundaryRow;
                 let isDark = diff > 0;
                 if (diff === 0 || diff === -1 || diff === 1) {
@@ -348,7 +374,6 @@
             }
         }
 
-        // Small annotation numbers along boundary
         ctx.font = '500 8px ui-monospace, monospace';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
         for (let i = 0; i < 40; i++) {
@@ -378,7 +403,6 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Spawns particles only when cursor moves
     document.addEventListener('mousemove', e => {
         const x = e.clientX;
         const y = e.clientY;
@@ -388,14 +412,13 @@
             const dy = y - lastY;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            // Emit a small cluster of subtle star/glow particles on movement
             const count = Math.min(Math.floor(dist / 6) + 1, 4);
             for (let i = 0; i < count; i++) {
                 particles.push({
                     x: x + (Math.random() - 0.5) * 8,
                     y: y + (Math.random() - 0.5) * 8,
                     vx: (Math.random() - 0.5) * 0.8 + dx * 0.05,
-                    vy: (Math.random() - 0.5) * 0.8 + dy * 0.05 - 0.3, // slight upward float
+                    vy: (Math.random() - 0.5) * 0.8 + dy * 0.05 - 0.3,
                     size: Math.random() * 2.2 + 0.8,
                     alpha: 0.75,
                     decay: Math.random() * 0.02 + 0.015
@@ -427,7 +450,6 @@
                 continue;
             }
 
-            // Draw subtle antigravity glowing dot
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(180, 185, 205, ${p.alpha})`;
